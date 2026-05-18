@@ -1,16 +1,16 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-const PADRAO_SUPERBEE = {
+const BANCO_DE_PALAVRAS = {
   "Kids-Escolar": ["apple", "blue", "dog", "sun", "jump"],
   "Kids-Final": ["butterfly", "garden", "school", "friend", "yellow"],
   "Teens-Escolar": ["action", "actor", "adventure", "airplane", "amazing"],
   "Teens-Final": ["challenge", "experience", "knowledge", "structure", "university"]
 };
 
-export default function Jogo() {
+function JogoContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const inputRef = useRef(null);
@@ -32,9 +32,8 @@ export default function Jogo() {
 
   useEffect(() => {
     const chave = `${modalidade}-${etapa}`;
-    // Tenta obter a lista customizada do Admin, senão usa a padrão
     const dadosLS = JSON.parse(localStorage.getItem("custom_words_superbee") || "{}");
-    const listaDefinitiva = dadosLS[chave] || PADRAO_SUPERBEE[chave] || [];
+    const listaDefinitiva = dadosLS[chave] || BANCO_DE_PALAVRAS[chave] || [];
     
     setPalavras(listaDefinitiva.map(p => ({ texto: p, status: "pendente" })));
   }, [modalidade, etapa]);
@@ -45,6 +44,7 @@ export default function Jogo() {
   const salvarRecordeNoPlacar = () => {
     if (hasSaved.current) return;
     hasSaved.current = true;
+
     const novoScore = {
       nome: nomeCompetidor,
       acertos: acertos,
@@ -66,13 +66,15 @@ export default function Jogo() {
       oscillator.connect(gainNode);
       gainNode.connect(audioCtx.destination);
       if (tipo === 'acerto') {
-        oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); 
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); 
         oscillator.frequency.setValueAtTime(880.00, audioCtx.currentTime + 0.08); 
         gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
         oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.3);
       } else {
-        oscillator.type = 'triangle'; oscillator.frequency.setValueAtTime(180, audioCtx.currentTime);
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(180, audioCtx.currentTime);
         oscillator.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.25);
         gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
@@ -86,7 +88,8 @@ export default function Jogo() {
       const timer = setTimeout(() => setTempo(tempo - 1), 1000);
       return () => clearTimeout(timer);
     } else if (tempo === 0 && !fimDeJogo && !statusFeedback) {
-      setFimDeJogo(true); salvarRecordeNoPlacar();
+      setFimDeJogo(true);
+      salvarRecordeNoPlacar();
     }
   }, [tempo, statusFeedback, palavras, fimDeJogo]);
 
@@ -114,7 +117,8 @@ export default function Jogo() {
       novasPalavras[indiceAtual].status = "erro"; setStatusFeedback('erro'); tocarSomFeedback('erro');
     }
     setPalavras(novasPalavras);
-    lockTeclado.current = true; setTimeout(() => { lockTeclado.current = false; }, 500);
+    lockTeclado.current = true;
+    setTimeout(() => { lockTeclado.current = false; }, 500);
   };
 
   const confirmarFeedbackEAvancar = () => {
@@ -123,7 +127,8 @@ export default function Jogo() {
     if (indiceAtual < palavras.length - 1) {
       setIndiceAtual(indiceAtual + 1);
     } else {
-      setFimDeJogo(true); salvarRecordeNoPlacar();
+      setFimDeJogo(true);
+      salvarRecordeNoPlacar();
     }
   };
 
@@ -143,6 +148,7 @@ export default function Jogo() {
 
   return (
     <div className={`min-h-screen relative flex flex-col items-center py-10 font-sans transition-colors duration-500 overflow-hidden ${statusFeedback === 'erro' ? 'bg-[#ef4444]' : statusFeedback === 'acerto' ? 'bg-[#22c55e]' : 'bg-[#f59e0b]'}`}>
+      
       <div className="absolute inset-0 z-0 text-white/10 font-bold select-none pointer-events-none uppercase">
         <span className="absolute top-10 left-10 text-7xl rotate-[-10deg]">Smart</span>
         <span className="absolute top-40 right-10 text-8xl rotate-[15deg]">Success</span>
@@ -151,18 +157,31 @@ export default function Jogo() {
         <span className="absolute bottom-20 left-20 text-8xl rotate-[-5deg]">Focus</span>
         <span className="absolute bottom-10 right-20 text-7xl rotate-[15deg]">Language</span>
       </div>
+
       <Link href="/" className="absolute top-6 right-6 border border-white text-white px-4 py-2 rounded-lg font-bold hover:bg-white hover:text-[#f59e0b] transition z-50">Voltar ao início</Link>
-      <div className="bg-white px-8 py-2 rounded-full font-bold text-2xl text-yellow-600 mb-8 shadow-md z-10 flex items-center gap-2">⏱ {Math.floor(tempo / 60)}:{(tempo % 60).toString().padStart(2, '0')}</div>
+      
+      <div className="bg-white px-8 py-2 rounded-full font-bold text-2xl text-yellow-600 mb-8 shadow-md z-10 flex items-center gap-2">
+        ⏱ {Math.floor(tempo / 60)}:{(tempo % 60).toString().padStart(2, '0')}
+      </div>
+
       <div className="flex-grow flex items-center justify-center z-10 w-full px-4">
         {fimDeJogo ? (
           <div className="bg-white rounded-[40px] shadow-2xl p-10 w-full max-w-[550px] flex flex-col items-center relative text-center">
             <span className="text-6xl mb-4">🏆</span>
             <h2 className="text-3xl font-black text-gray-800 mb-1 uppercase tracking-tight">Fim de Partida!</h2>
             <p className="text-gray-400 font-bold text-sm uppercase tracking-wider mb-8">{nomeCompetidor}</p>
+            
             <div className="flex gap-12 justify-center mb-10 w-full">
-              <div className="flex flex-col items-center"><span className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Acertos</span><span className="text-5xl font-black text-green-500">✓ {acertos}</span></div>
-              <div className="flex flex-col items-center"><span className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Erros</span><span className="text-5xl font-black text-red-500">✕ {erros}</span></div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Acertos</span>
+                <span className="text-5xl font-black text-green-500">✓ {acertos}</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Erros</span>
+                <span className="text-5xl font-black text-red-500">✕ {erros}</span>
+              </div>
             </div>
+
             <button onClick={() => router.push('/')} className="w-full bg-[#f59e0b] hover:bg-yellow-500 text-black font-black py-4 rounded-2xl shadow-xl shadow-yellow-600/10 transition duration-200 uppercase tracking-wider text-sm cursor-pointer">Voltar ao Menu (Enter)</button>
           </div>
         ) : !statusFeedback ? (
@@ -179,6 +198,7 @@ export default function Jogo() {
           </div>
         )}
       </div>
+
       {!fimDeJogo && (
         <div className="flex gap-6 mb-10 z-10">
           <button onClick={() => setMostrarPalavra(!mostrarPalavra)} className="bg-white w-16 h-16 rounded-full shadow-lg text-gray-700 flex items-center justify-center text-2xl hover:bg-gray-100 transition">👁️</button>
@@ -186,10 +206,12 @@ export default function Jogo() {
           <button onClick={() => { tocarSomFeedback('erro'); setStatusFeedback('erro'); const n = [...palavras]; n[indiceAtual].status="erro"; setPalavras(n); }} className="bg-white w-16 h-16 rounded-full shadow-lg text-red-600 flex items-center justify-center text-2xl hover:bg-gray-100 transition">✕</button>
         </div>
       )}
+
       <div className="bg-white w-full max-w-[900px] rounded-full px-8 py-4 shadow-2xl z-10 flex items-center justify-between mb-10">
         <div className="flex items-center gap-4"><span className="text-gray-400 font-bold text-sm uppercase tracking-widest">Lista de Palavras</span><span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-md font-bold text-xs">{palavras.length}</span></div>
         <div className="flex gap-4"><div className="bg-green-100 text-green-600 px-4 py-1 rounded-full font-black text-sm flex items-center gap-2">✓ {acertos}</div><div className="bg-red-100 text-red-600 px-4 py-1 rounded-full font-black text-sm flex items-center gap-2">✕ {erros}</div><button onClick={() => setListaAberta(!listaAberta)} className="text-yellow-500 font-bold text-xl ml-2">▼</button></div>
       </div>
+      
       {listaAberta && (
         <div className="absolute bottom-32 bg-white w-[800px] max-h-60 overflow-y-auto rounded-2xl shadow-2xl z-50 p-4">
           {palavras.map((p, i) => (
@@ -201,5 +223,13 @@ export default function Jogo() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Jogo() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#f59e0b] flex items-center justify-center text-white font-black text-2xl">Carregando...</div>}>
+      <JogoContent />
+    </Suspense>
   );
 }

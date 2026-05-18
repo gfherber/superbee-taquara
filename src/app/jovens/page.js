@@ -1,16 +1,16 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-const PADRAO_JOVENS = {
+const BANCO_DE_PALAVRAS_JOVENS = {
   "Kids-Escolar": ["work", "team", "task", "file", "desk"],
   "Kids-Final": ["office", "worker", "report", "email", "career"],
   "Teens-Escolar": ["company", "meeting", "manager", "project", "invoice"],
   "Teens-Final": ["interview", "business", "deadline", "customer", "contract"]
 };
 
-export default function JogoJovens() {
+function JogoJovensContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const inputRef = useRef(null);
@@ -33,7 +33,7 @@ export default function JogoJovens() {
   useEffect(() => {
     const chave = `${modalidade}-${etapa}`;
     const dadosLS = JSON.parse(localStorage.getItem("custom_words_jovens") || "{}");
-    const listaDefinitiva = dadosLS[chave] || PADRAO_JOVENS[chave] || [];
+    const listaDefinitiva = dadosLS[chave] || BANCO_DE_PALAVRAS_JOVENS[chave] || [];
     
     setPalavras(listaDefinitiva.map(p => ({ texto: p, status: "pendente" })));
   }, [modalidade, etapa]);
@@ -104,7 +104,7 @@ export default function JogoJovens() {
 
   const validarPalavra = () => {
     if (!digitado || !palavras[indiceAtual] || statusFeedback || fimDeJogo) return;
-    const palavraCerta = palavras[indiceAtual].texto.toLowerCase();
+    const palabraCerta = palavras[indiceAtual].texto.toLowerCase();
     const palavraDigitada = digitado.trim().toLowerCase();
     const novasPalavras = [...palavras];
     if (palavraDigitada === palavraCerta) {
@@ -141,7 +141,7 @@ export default function JogoJovens() {
   if (palavras.length === 0) return null;
 
   return (
-    <div className={`min-h-screen relative flex flex-col items-center py-10 font-sans transition-colors duration-500 overflow-hidden ${statusFeedback === 'erro' ? 'bg-[#ef4444]' : statusFeedback === 'acerto' ? 'bg-[#22c55e]' : 'bg-[#00458c]'}`}>
+    <div className={`min-h-screen relative flex flex-col items-center py-10 font-sans transition-colors duration-500 overflow-hidden ${statusFeedback === 'erro' ? 'bg-[#ef4444]' : statusFeedback === 'acerto' ? 'bg-[#00458c]' : 'bg-[#00458c]'}`}>
       <div className="absolute inset-0 z-0 text-white/10 font-bold select-none pointer-events-none uppercase">
         <span className="absolute top-10 left-10 text-7xl rotate-[-10deg]">Career</span>
         <span className="absolute top-40 right-10 text-8xl rotate-[15deg]">Success</span>
@@ -181,7 +181,7 @@ export default function JogoJovens() {
       {!fimDeJogo && (
         <div className="flex gap-6 mb-10 z-10">
           <button onClick={() => setMostrarPalavra(!mostrarPalavra)} className="bg-white w-16 h-16 rounded-full shadow-lg text-gray-700 flex items-center justify-center text-2xl hover:bg-gray-100 transition">👁️</button>
-          <button onClick={() => hablarPalavra(palavras[indiceAtual].texto)} className="bg-white w-16 h-16 rounded-full shadow-lg text-blue-600 flex items-center justify-center text-2xl hover:bg-gray-100 transition">🔊</button>
+          <button onClick={() => falarPalavra(palavras[indiceAtual].texto)} className="bg-white w-16 h-16 rounded-full shadow-lg text-blue-600 flex items-center justify-center text-2xl hover:bg-gray-100 transition">🔊</button>
           <button onClick={() => { tocarSomFeedback('erro'); setStatusFeedback('erro'); const n = [...palavras]; n[indiceAtual].status="erro"; setPalavras(n); }} className="bg-white w-16 h-16 rounded-full shadow-lg text-red-600 flex items-center justify-center text-2xl hover:bg-gray-100 transition">✕</button>
         </div>
       )}
@@ -200,5 +200,13 @@ export default function JogoJovens() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function JogoJovens() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#00458c] flex items-center justify-center text-white font-black text-2xl">Carregando...</div>}>
+      <JogoJovensContent />
+    </Suspense>
   );
 }

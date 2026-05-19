@@ -1,21 +1,8 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-
-const SUGERIDAS_SUPERBEE = {
-  "Kids-Escolar": ["apple", "blue", "dog", "sun", "jump"],
-  "Kids-Final": ["butterfly", "garden", "school", "friend", "yellow"],
-  "Teens-Escolar": ["action", "actor", "adventure", "airplane", "amazing"],
-  "Teens-Final": ["challenge", "experience", "knowledge", "structure", "university"]
-};
-
-const SUGERIDAS_JOVENS = {
-  "Kids-Escolar": ["work", "team", "task", "file", "desk"],
-  "Kids-Final": ["office", "worker", "report", "email", "career"],
-  "Teens-Escolar": ["company", "meeting", "manager", "project", "invoice"],
-  "Teens-Final": ["interview", "business", "deadline", "customer", "contract"]
-};
+import Link from "next/link";
 
 export default function Home() {
   const router = useRouter();
@@ -25,28 +12,12 @@ export default function Home() {
   const [eixo, setEixo] = useState("Geral");
   const [modo, setModo] = useState("superbee"); 
   const [verPlacar, setVerPlacar] = useState(false);
-  const [verAdmin, setVerAdmin] = useState(false);
   const [ranking, setRanking] = useState([]);
   const [erroNome, setErroNome] = useState(false);
 
   const [modoEquipes, setModoEquipes] = useState(false);
   const [qtdEquipes, setQtdEquipes] = useState(2);
   const [nomesEquipes, setNomesEquipes] = useState(["Equipe A", "Equipe B", "Equipe C", "Equipe D"]);
-
-  const [adminModo, setAdminModo] = useState("superbee");
-  const [adminModalidade, setAdminModalidade] = useState("Kids");
-  const [adminEtapa, setAdminEtapa] = useState("Escolar");
-  const [palavrasAdmin, setPalavrasAdmin] = useState([]);
-  const [novaPalavra, setNovaPalavra] = useState("");
-
-  useEffect(() => {
-    if (adminModo === "profissoes") return;
-    const chaveLS = adminModo === "superbee" ? "custom_words_superbee" : "custom_words_jovens";
-    const bancoPadrao = adminModo === "superbee" ? SUGERIDAS_SUPERBEE : SUGERIDAS_JOVENS;
-    const dadosLS = JSON.parse(localStorage.getItem(chaveLS) || "{}");
-    const filtro = `${adminModalidade}-${adminEtapa}`;
-    setPalavrasAdmin(dadosLS[filtro] || bancoPadrao[filtro] || []);
-  }, [adminModo, adminModalidade, adminEtapa, verAdmin]);
 
   const handleNomeEquipe = (index, valor) => {
     const novos = [...nomesEquipes];
@@ -87,13 +58,12 @@ export default function Home() {
     const dados = JSON.parse(localStorage.getItem('spelling_leaderboard') || '[]');
     setRanking(dados);
     setVerPlacar(true);
-    setVerAdmin(false);
   };
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen w-full overflow-hidden font-sans bg-gray-50 relative text-gray-900">
       
-      {/* SELETOR DE MODO NO TOPO COM TRES OPCOES */}
+      {/* SELETOR DE MODO NO TOPO */}
       <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 bg-white/90 backdrop-blur border border-gray-200 p-1.5 rounded-full shadow-2xl flex items-center gap-1 w-[95%] max-w-[550px]">
         <button type="button" onClick={() => { setModo("superbee"); setModoEquipes(false); }} className={`flex-1 text-center py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${modo === "superbee" ? "bg-[#f59e0b] text-black shadow-md" : "text-gray-400"}`}>Super Bee</button>
         <button type="button" onClick={() => { setModo("jovens"); }} className={`flex-1 text-center py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${modo === "jovens" ? "bg-[#00458c] text-white shadow-md" : "text-gray-400"}`}>Jovens Aprendizes</button>
@@ -116,14 +86,14 @@ export default function Home() {
 
       {/* LADO DIREITO */}
       <div className="w-full md:w-1/2 flex flex-col justify-center items-center py-20 relative">
-        <div className={`bg-white p-8 md:p-10 rounded-[32px] shadow-2xl w-[95%] transition-all duration-300 ${verAdmin ? 'max-w-[550px]' : 'max-w-[450px]'}`}>
+        <div className="bg-white p-8 md:p-10 rounded-[32px] shadow-2xl w-[95%] max-w-[450px] transition-all duration-300">
           
-          {!verPlacar && !verAdmin ? (
+          {!verPlacar ? (
             <>
               <h2 className="text-3xl font-black text-center mb-1">{modo === "superbee" ? "Spelling Bee" : modo === "jovens" ? "Learning Track" : "EAD Quiz"}</h2>
               <p className="text-center text-gray-400 mb-6 font-semibold text-sm italic">Configuração da dinâmica:</p>
               
-              {/* TOGGLE MODO EQUIPES (Ativo para Jovens e Profissoes) */}
+              {/* TOGGLE MODO EQUIPES */}
               {modo !== "superbee" && (
                 <div className={`mb-6 flex items-center justify-between p-4 rounded-2xl border ${modo === "jovens" ? "bg-blue-50 border-blue-100" : "bg-purple-50 border-purple-100"}`}>
                   <div className="flex flex-col">
@@ -189,10 +159,10 @@ export default function Home() {
               
               <div className="flex justify-between mt-4">
                 <button type="button" onClick={abrirPlacar} className="text-[10px] font-bold text-gray-400 hover:text-gray-600 uppercase tracking-widest cursor-pointer">🏆 Ver Placar</button>
-                {modo !== "profissoes" && <button type="button" onClick={() => setVerAdmin(true)} className="text-[10px] font-bold text-gray-400 hover:text-gray-600 uppercase tracking-widest cursor-pointer">⚙️ Admin</button>}
+                <Link href="/admin" className="text-[10px] font-bold text-gray-400 hover:text-gray-600 uppercase tracking-widest cursor-pointer flex items-center gap-1">⚙️ Acessar Admin</Link>
               </div>
             </>
-          ) : verPlacar ? (
+          ) : (
             <>
               <h2 className="text-2xl font-black text-center mb-6 uppercase">🏆 Hall da Fama</h2>
               <div className="space-y-2 mb-6">
@@ -209,26 +179,6 @@ export default function Home() {
                 )}
               </div>
               <button type="button" onClick={() => setVerPlacar(false)} className="w-full bg-gray-800 text-white font-black py-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer">← Voltar</button>
-            </>
-          ) : (
-            /* CONFIGURACOES DO ADMIN DE PALAVRAS */
-            <>
-              <h2 className="text-2xl font-black text-center mb-4 uppercase">⚙️ Gestão de Palavras</h2>
-              <div className="grid grid-cols-3 gap-1 mb-4">
-                <select value={adminModo} onChange={(e) => setAdminModo(e.target.value)} className="text-[10px] font-black p-1 bg-gray-50 rounded border border-gray-200 outline-none text-gray-900"><option value="superbee">Super Bee</option><option value="jovens">Jovens</option></select>
-                <select value={adminModalidade} onChange={(e) => setAdminModalidade(e.target.value)} className="text-[10px] font-black p-1 bg-gray-50 rounded border border-gray-200 outline-none text-gray-900"><option value="Kids">Kids</option><option value="Teens">Teens</option></select>
-                <select value={adminEtapa} onChange={(e) => setAdminEtapa(e.target.value)} className="text-[10px] font-black p-1 bg-gray-50 rounded border border-gray-200 outline-none text-gray-900"><option value="Escolar">Escolar</option><option value="Final">Final</option></select>
-              </div>
-              <div className="flex gap-2 mb-4">
-                <input type="text" value={novaPalavra} onChange={(e) => setNovaPalavra(e.target.value)} placeholder="NOVA PALAVRA..." className="flex-1 border border-gray-200 rounded-lg px-3 py-1 text-sm font-black uppercase outline-none text-gray-900" />
-                <button type="button" className="bg-green-600 text-white font-black px-4 rounded-lg text-[10px] uppercase cursor-pointer">ADD</button>
-              </div>
-              <div className="border border-gray-100 bg-gray-50 rounded-xl p-3 max-h-[150px] overflow-y-auto mb-4 flex flex-wrap gap-1">
-                {palavrasAdmin.map((p, index) => (
-                  <span key={index} className="bg-white border border-gray-200 px-2 py-0.5 rounded text-[10px] font-black uppercase flex items-center gap-1 text-gray-900">{p}</span>
-                ))}
-              </div>
-              <button type="button" onClick={() => setVerAdmin(false)} className="w-full bg-gray-800 text-white font-black py-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer transition">Salvar & Fechar</button>
             </>
           )}
         </div>

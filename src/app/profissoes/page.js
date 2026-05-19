@@ -3,7 +3,35 @@ import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 
+const TODOS_CURSOS_SENAC = [
+  "Técnico em Desenvolvimento de Sistemas",
+  "Técnico em Administração",
+  "Técnico em Contabilidade",
+  "Técnico em Logística",
+  "Técnico em Recursos Humanos",
+  "Técnico em Transações Imobiliárias",
+  "Técnico em Qualidade",
+  "Técnico em Segurança do Trabalho",
+  "Especialização Técnica em Segurança do Trabalho em Meio Ambiente",
+  "Técnico em Design de Interiores",
+  "Técnico em Guia de Turismo",
+  "Técnico em Meio Ambiente",
+  "Técnico em Óptica"
+];
+
 const BANCO_PROFISSOES = {
+  "Geral": [
+    { pergunta: "Profissional estratégico que atua na elaboração de planos de cargos, salários e dinâmicas de engajamento da equipe.", resposta: "Técnico em Recursos Humanos" },
+    { pergunta: "Se o banco de dados da empresa caiu ou o sistema precisa de uma nova funcionalidade, é esse o profissional acionado.", resposta: "Técnico em Desenvolvimento de Sistemas" },
+    { pergunta: "Braço direito dos gestores, atua de forma versátil coordenando documentos, agendas e o fluxo de comunicação interna da empresa.", resposta: "Técnico em Administração" },
+    { pergunta: "Especialista em evitar desperdícios no estoque e garantir que o produto chegue ao cliente no prazo correto.", resposta: "Técnico em Logística" },
+    { pergunta: "Presta assessoria em financiamentos habitacionais e possui registro no CRECI para atuar legalmente no mercado.", resposta: "Técnico em Transações Imobiliárias" },
+    { pergunta: "Profissional indispensável para garantir que a empresa esteja em dia com a Receita Federal e com a saúde financeira.", resposta: "Técnico em Contabilidade" },
+    { pergunta: "Implementa métodos de melhoria contínua (como o 5S), garantindo que o cliente sempre receba um produto sem defeitos.", resposta: "Técnico em Qualidade" },
+    { pergunta: "Profissional apaixonado por viagens que domina a história, geografia e a cultura local para encantar visitantes e turistas.", resposta: "Técnico em Guia de Turismo" },
+    { pergunta: "Trabalha na elaboração de projetos de sustentabilidade e fiscaliza processos corporativos para que não poluam a natureza.", resposta: "Técnico em Meio Ambiente" },
+    { pergunta: "Especialista que atende o cliente na clínica ou loja, fazendo ajustes precisos nas armações e recomendando as melhores lentes corretivas.", resposta: "Técnico em Óptica" }
+  ],
   "Tecnologia": [
     { pergunta: "Profissional que analisa, projeta, desenvolve e testa sistemas, softwares e aplicativos utilizando linguagens de programação.", resposta: "Técnico em Desenvolvimento de Sistemas" },
     { pergunta: "Responsável por criar códigos estruturados, construir bancos de dados relacionais e dar vida a plataformas digitais, sites e aplicativos.", resposta: "Técnico em Desenvolvimento de Sistemas" },
@@ -13,7 +41,7 @@ const BANCO_PROFISSOES = {
     { pergunta: "Profissional focado na manutenção de códigos existentes, criação de integrações via APIs e no gerenciamento de servidores locais ou em nuvem.", resposta: "Técnico em Desenvolvimento de Sistemas" },
     { pergunta: "Especialista que transforma problemas e necessidades de negócios em linhas de código funcionais, prezando pela segurança de dados.", resposta: "Técnico em Desenvolvimento de Sistemas" },
     { pergunta: "Nesta formação do Senac com carga horária de 1216 horas, o aluno se qualifica para programar computadores e desenvolver soluções web completas.", resposta: "Técnico em Desenvolvimento de Sistemas" },
-    { pergunta: "Profissional focado no domínio de algoritmos, estruturas de dados, metodologias ágeis (como Scrum) e arquitetura modular de softwares.", resposta: "Técnico em Desenvolvimento de Sistemas" },
+    { pergunta: "Profissional focado no domínio de algoritmos, estruturas de dados, methodologies ágeis (como Scrum) e arquitetura modular de softwares.", resposta: "Técnico em Desenvolvimento de Sistemas" },
     { pergunta: "Aquele que passa o dia imerso em ambientes de desenvolvimento (como editores de código), escrevendo rotinas lógicas e solucionando bugs de sistemas.", resposta: "Técnico em Desenvolvimento de Sistemas" }
   ],
   "Gestão e Negócios": [
@@ -28,29 +56,30 @@ const BANCO_PROFISSOES = {
     { pergunta: "Profissional habilitado para intermediar a compra, venda, permuta e locação de imóveis, prestando consultoria documental segura.", resposta: "Técnico em Transações Imobiliárias" },
     { pergunta: "Conhecido no mercado imobiliário como corretor, esse especialista avalia padrões de moradia, apresenta imóveis e redige contratos de locação ou venda.", resposta: "Técnico em Transações Imobiliárias" },
     { pergunta: "Profissional que avalia processos produtivos, aplica ferramentas estatísticas e auditorias para garantir conformidade e normas de padronização.", resposta: "Técnico em Qualidade" },
-    { pergunta: "Seu papel é certificar que os produtos e serviços de uma organização sigam padrões de excelência e normas internacionais reconhecidas, como a ISO 9001.", resposta: "Técnico em Qualidade" }
+    { pergunta: "Seu papel é certificar que os produtos e serviços de uma organização sigam padrões de excelência e normas internacionais reconhecidas.", resposta: "Técnico em Qualidade" }
   ],
   "Saúde, Turismo e Design": [
-    { pergunta: "Profissional focado em identificar riscos de acidentes, orientar o uso de EPIs, ministrar treinamentos e implementar políticas de prevenção contra sinistros ocupacionais.", resposta: "Técnico em Segurança do Trabalho" },
-    { pergunta: "Responsável por inspecionar locais de trabalho, investigar causas de acidentes laborais e zelar pela integridade física e saúde de todos os colaboradores.", resposta: "Técnico em Segurança do Trabalho" },
+    { pergunta: "Profissional focado em identificar riscos de acidentes, orientar o uso de EPIs e implementar políticas de prevenção contra sinistros ocupacionais.", resposta: "Técnico em Segurança do Trabalho" },
+    { pergunta: "Responsável por inspecionar locais de trabalho e zelar pela integridade física e saúde de todos os colaboradores.", resposta: "Técnico em Segurança do Trabalho" },
     { pergunta: "Curso de nível de especialização com 300h voltado para o profissional que deseja aprofundar conhecimentos em gestão de impactos e riscos ecológicos industriais.", resposta: "Especialização Técnica em Segurança do Trabalho em Meio Ambiente" },
     { pergunta: "Formação focada em profissionais de segurança que buscam se diferenciar no mercado atuando com sustentabilidade corporativa, controle de resíduos e auditoria ambiental.", resposta: "Especialização Técnica em Segurança do Trabalho em Meio Ambiente" },
-    { pergunta: "Profissional que planeja e organiza espaços internos residenciais ou comerciais, aliando estética, conforto, ergonomia e funcionalidade.", resposta: "Técnico em Design de Interiores" },
-    { pergunta: "Cria conceitos inovadores de iluminação, escolha de mobiliário, texturas e paletas de cores para transformar ambientes internos de forma harmoniosa.", resposta: "Técnico em Design de Interiores" },
-    { pergunta: "Profissional responsável por acompanhar, orientar e transmitir informações de cunho histórico e cultural a pessoas ou grupos em roteiros de viagens.", resposta: "Técnico em Guia de Turismo" },
-    { pergunta: "Lidera excursões, roteiros urbanos ou ecológicos, garantindo o bem-estar dos viajantes e promovendo de forma ética o patrimônio local de uma região.", resposta: "Técnico em Guia de Turismo" },
-    { pergunta: "Profissional que executa ações de controle, monitoramento e preservação ambiental, avaliando impactos, destinação de resíduos e recursos naturais.", resposta: "Técnico em Meio Ambiente" },
-    { pergunta: "Coleta amostras de água e solo, desenvolve relatórios técnicos de impacto ecológico e cria programas de reciclagem e educação voltados à sustentabilidade.", resposta: "Técnico em Meio Ambiente" },
+    { pergunta: "Profissional que planeja e organiza espaços internos residenciais ou comerciais, aliando estética, conforto e funcionalidade.", resposta: "Técnico em Design de Interiores" },
+    { pergunta: "Cria conceitos de iluminação, escolha de mobiliário e paletas de cores para transformar ambientes internos de forma harmoniosa.", resposta: "Técnico em Design de Interiores" },
+    { pergunta: "Responsável por acompanhar, orientar e transmitir informações de cunho histórico e cultural a pessoas ou grupos em roteiros de viagens.", resposta: "Técnico em Guia de Turismo" },
+    { pergunta: "Lidera excursões garantindo o bem-estar dos viajantes e promovendo de forma ética o patrimônio local de uma região.", resposta: "Técnico em Guia de Turismo" },
+    { pergunta: "Executa ações de controle, monitoramento e preservação ambiental, avaliando impactos, destinação de resíduos e recursos naturais.", resposta: "Técnico em Meio Ambiente" },
+    { pergunta: "Coleta amostras de água e solo, desenvolve relatórios técnicos de impacto ecológico e cria programas de educação voltados à sustentabilidade.", resposta: "Técnico em Meio Ambiente" },
     { pergunta: "Profissional focado na fabricação, montagem, adaptação e comercialização de lentes oftálmicas, óculos corretivos e lentes de contato.", resposta: "Técnico em Óptica" },
-    { pergunta: "Gerencia laboratórios e estabelecimentos de visão, interpreta receitas médicas oftalmológicas e orienta o cliente na escolha correta de lentes e tratamentos.", resposta: "Técnico em Óptica" }
+    { pergunta: "Gerencia laboratórios de visão, interpreta receitas oftalmológicas e orienta o cliente na escolha correta de lentes.", resposta: "Técnico em Óptica" }
   ]
 };
+
+const emba = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
 function JogoProfissoesContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const inputRef = useRef(null);
-  const lockTeclado = useRef(false);
 
   const eixo = searchParams.get('eixo') || "Geral";
   const nomeCompetidor = searchParams.get('nome') || "Anônimo";
@@ -59,58 +88,57 @@ function JogoProfissoesContent() {
   const nomesEquipes = equipesParam ? equipesParam.split(',') : [];
   const modoEquipes = nomesEquipes.length > 0;
 
-  const [tempo, setTempo] = useState(120); 
+  const [tempo, setTempo] = useState(15); 
   const [desafios, setDesafios] = useState([]);
   const [indiceAtual, setIndiceAtual] = useState(0);
-  const [digitado, setDigitado] = useState("");
   const [mostrarPalavra, setMostrarPalavra] = useState(false);
   const [statusFeedback, setStatusFeedback] = useState(null); 
   const [fimDeJogo, setFimDeJogo] = useState(false);
 
   const [scores, setScores] = useState(nomesEquipes.map(() => 0));
   const [turnoEquipe, setTurnoEquipe] = useState(0);
-
-  const embaralhar = (array) => array.sort(() => Math.random() - 0.5);
+  
+  // Controle de Rodadas do Modo Equipes
+  const [rodadaAtual, setRodadaAtual] = useState(1);
+  const TOTAL_RODADAS = 3;
 
   useEffect(() => {
+    const dadosLS = JSON.parse(localStorage.getItem("custom_words_profissoes") || "{}");
     let listaFiltro = [];
+
     if (eixo === "Geral") {
-      listaFiltro = [
-        ...BANCO_PROFISSOES["Tecnologia"],
-        ...BANCO_PROFISSOES["Gestão e Negócios"],
-        ...BANCO_PROFISSOES["Saúde, Turismo e Design"]
-      ];
+      const tec = (dadosLS["Tecnologia"] && dadosLS["Tecnologia"].length > 0) ? dadosLS["Tecnologia"] : BANCO_PROFISSOES["Tecnologia"];
+      const ges = (dadosLS["Gestão e Negócios"] && dadosLS["Gestão e Negócios"].length > 0) ? dadosLS["Gestão e Negócios"] : BANCO_PROFISSOES["Gestão e Negócios"];
+      const sau = (dadosLS["Saúde, Turismo e Design"] && dadosLS["Saúde, Turismo e Design"].length > 0) ? dadosLS["Saúde, Turismo e Design"] : BANCO_PROFISSOES["Saúde, Turismo e Design"];
+      const ger = (dadosLS["Geral"] && dadosLS["Geral"].length > 0) ? dadosLS["Geral"] : BANCO_PROFISSOES["Geral"];
+      listaFiltro = [...tec, ...ges, ...sau, ...ger];
     } else {
-      listaFiltro = BANCO_PROFISSOES[eixo] || [];
+      listaFiltro = (dadosLS[eixo] && dadosLS[eixo].length > 0) ? dadosLS[eixo] : BANCO_PROFISSOES[eixo] || [];
     }
     
-    const carregados = listaFiltro.map(item => ({
-      ...item,
-      status: "pendente"
-    }));
+    const carregados = listaFiltro.map(item => {
+      const errados = TODOS_CURSOS_SENAC.filter(c => c !== item.resposta);
+      const erradosSorteados = emba(errados).slice(0, 2);
+      return {
+        ...item,
+        opcoes: emba([item.resposta, ...erradosSorteados]),
+        status: "pendente"
+      };
+    });
     
-    setDesafios(embaralhar(carregados));
+    setDesafios(emba(carregados));
   }, [eixo]);
 
   const acertosTotal = desafios.filter(d => d.status === "acerto").length;
 
-  const normalizarTexto = (txt) => {
-    return txt
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  };
-
-  const validarResposta = () => {
-    if (!digitado || statusFeedback || fimDeJogo) return;
+  const validarResposta = (opcaoEscolhida) => {
+    if (statusFeedback || fimDeJogo) return;
     
-    const certa = normalizarTexto(desafios[indiceAtual].resposta);
-    const digitada = normalizarTexto(digitado);
+    const certa = desafios[indiceAtual].resposta.toLowerCase().trim();
+    const escolhida = opcaoEscolhida.toLowerCase().trim();
     const novas = [...desafios];
 
-    if (digitada === certa || (certa.includes(digitada) && digitada.length > 10)) {
+    if (escolhida === certa) {
       novas[indiceAtual].status = "acerto";
       setStatusFeedback('acerto');
       if (modoEquipes) {
@@ -123,18 +151,32 @@ function JogoProfissoesContent() {
       setStatusFeedback('erro');
     }
     setDesafios(novas);
-    lockTeclado.current = true;
-    setTimeout(() => { lockTeclado.current = false; }, 500);
   };
 
   const avancar = () => {
-    if (lockTeclado.current) return;
     setStatusFeedback(null);
-    setDigitado("");
     setMostrarPalavra(false);
+    setTempo(15);
 
     if (modoEquipes) {
-      setTurnoEquipe((turnoEquipe + 1) % nomesEquipes.length);
+      const proximaEquipe = turnoEquipe + 1;
+      if (proximaEquipe < nomesEquipes.length) {
+        setTurnoEquipe(proximaEquipe);
+      } else {
+        if (rodadaAtual < TOTAL_RODADAS) {
+          setRodadaAtual(rodadaAtual + 1);
+          setTurnoEquipe(0);
+        } else {
+          setFimDeJogo(true);
+          return;
+        }
+      }
+    } else {
+      // Modo Individual: Trava tradicional em 10 perguntas
+      if (indiceAtual >= 9) {
+        setFimDeJogo(true);
+        return;
+      }
     }
 
     if (indiceAtual < desafios.length - 1) {
@@ -145,11 +187,29 @@ function JogoProfissoesContent() {
   };
 
   const pularDesafio = () => {
-    setDigitado("");
     setMostrarPalavra(false);
+    setTempo(15);
+
     if (modoEquipes) {
-      setTurnoEquipe((turnoEquipe + 1) % nomesEquipes.length);
+      const proximaEquipe = turnoEquipe + 1;
+      if (proximaEquipe < nomesEquipes.length) {
+        setTurnoEquipe(proximaEquipe);
+      } else {
+        if (rodadaAtual < TOTAL_RODADAS) {
+          setRodadaAtual(rodadaAtual + 1);
+          setTurnoEquipe(0);
+        } else {
+          setFimDeJogo(true);
+          return;
+        }
+      }
+    } else {
+      if (indiceAtual >= 9) {
+        setFimDeJogo(true);
+        return;
+      }
     }
+
     if (indiceAtual < desafios.length - 1) {
       setIndiceAtual(indiceAtual + 1);
     } else {
@@ -167,10 +227,36 @@ function JogoProfissoesContent() {
     if (tempo > 0 && !statusFeedback && !fimDeJogo) {
       const timer = setTimeout(() => setTempo(tempo - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (tempo === 0 && !fimDeJogo) {
-      setFimDeJogo(true);
+    } else if (tempo === 0 && !fimDeJogo && !statusFeedback) {
+      const novas = [...desafios];
+      novas[indiceAtual].status = "erro";
+      setStatusFeedback('erro');
+      setDesafios(novas);
     }
-  }, [tempo, statusFeedback, fimDeJogo]);
+  }, [tempo, statusFeedback, fimDeJogo, desafios, indiceAtual]);
+
+  // Lógica Avançada de Distribuição de Posições do Pódio (Tratamento de Empates)
+  const obterDadosPodio = () => {
+    const mapeado = nomesEquipes.map((nome, i) => ({ nome, score: scores[i] }));
+    mapeado.sort((a, b) => b.score - a.score);
+
+    let rankAtual = 1;
+    const ranqueado = mapeado.map((item, idx) => {
+      if (idx > 0 && item.score < mapeado[idx - 1].score) {
+        rankAtual = idx + 1;
+      }
+      return { ...item, rank: rankAtual };
+    });
+
+    return {
+      primeiros: ranqueado.filter(e => e.rank === 1 && e.score > 0),
+      segundos: ranqueado.filter(e => e.rank === 2 && e.score > 0),
+      terceiros: ranqueado.filter(e => e.rank === 3 && e.score > 0),
+      restante: ranqueado.filter(e => e.rank > 3 || e.score === 0)
+    };
+  };
+
+  const podio = obterDadosPodio();
 
   if (desafios.length === 0) return null;
 
@@ -227,87 +313,161 @@ function JogoProfissoesContent() {
           Sair
         </Link>
 
-        <div className="bg-white/10 border border-white/20 px-8 py-2 rounded-full font-black text-3xl text-white mb-8 shadow-2xl backdrop-blur-sm">
+        {/* CRONÔMETRO INDIVIDUAL */}
+        <div className={`bg-white/10 border border-white/20 px-8 py-2 rounded-full font-black text-3xl text-white mb-6 shadow-2xl backdrop-blur-sm transition-colors ${tempo <= 5 && !statusFeedback ? 'text-red-400 border-red-500 animate-pulse' : ''}`}>
           ⏱ {Math.floor(tempo / 60)}:{(tempo % 60).toString().padStart(2, '0')}
         </div>
 
         <div className="w-full max-w-[850px] z-10">
           {fimDeJogo ? (
-            <div className="bg-white rounded-[40px] shadow-2xl p-12 flex flex-col items-center text-center">
-              <span className="text-8xl mb-6">🏁</span>
-              <h2 className="text-4xl font-black text-gray-800 mb-2 uppercase">Fim da Trilha EAD!</h2>
+            /* TELA FINAL: VISUAL COMPLETO DO PÓDIO PROFISSIONAL PARA PROJETOR */
+            <div className="bg-white rounded-[40px] shadow-2xl p-10 flex flex-col items-center w-full max-w-[800px] mx-auto animate-in zoom-in duration-300">
+              <h2 className="text-4xl font-black text-gray-800 mb-1 uppercase tracking-tight">Trilha Concluída!</h2>
+              <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-12">Classificação Final das Equipes</p>
               
               {modoEquipes ? (
-                <div className="w-full mt-8 space-y-4">
-                  <p className="text-gray-400 font-black text-xs uppercase tracking-widest mb-4">Pontuação Final</p>
-                  {nomesEquipes.map((nome, i) => (
-                    <div key={i} className="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border-2 border-gray-100">
-                      <span className="font-black uppercase text-gray-700">{nome}</span>
-                      <span className="text-3xl font-black text-purple-600">{scores[i]} pts</span>
+                <div className="w-full flex flex-col items-center">
+                  
+                  {/* Estrutura de Degraus do Pódio */}
+                  <div className="flex items-end justify-center w-full max-w-[600px] h-[280px] mb-10 px-4">
+                    
+                    {/* 2º LUGAR (PRATA) - ESQUERDA */}
+                    <div className="flex-1 flex flex-col items-center">
+                      <div className="text-center mb-2 px-2 max-w-[140px] truncate">
+                        {podio.segundos.map((e, idx) => (
+                          <p key={idx} className="font-black text-sm uppercase text-gray-700 truncate">{e.nome}</p>
+                        ))}
+                        {podio.segundos.length === 0 && <p className="text-gray-300 text-xs font-bold italic">--</p>}
+                      </div>
+                      <div className="w-full bg-slate-300 border-t-4 border-slate-400 rounded-t-2xl h-[130px] flex flex-col items-center justify-center shadow-md">
+                        <span className="text-4xl">🥈</span>
+                        <span className="text-xs font-black text-slate-700 uppercase mt-1">2º Lugar</span>
+                        {podio.segundos.length > 0 && <span className="text-lg font-black text-slate-800 mt-1">{podio.segundos[0].score} pts</span>}
+                      </div>
                     </div>
-                  ))}
+
+                    {/* 1º LUGAR (OURO) - CENTRO BRILHANTE */}
+                    <div className="flex-1 flex flex-col items-center scale-105 z-10">
+                      <div className="text-center mb-2 px-2 max-w-[160px] truncate">
+                        {podio.primeiros.map((e, idx) => (
+                          <p key={idx} className="font-black text-base uppercase text-yellow-600 truncate animate-pulse">{e.nome}</p>
+                        ))}
+                        {podio.primeiros.length === 0 && <p className="text-gray-300 text-xs font-bold italic">--</p>}
+                      </div>
+                      <div className="w-full bg-yellow-400 border-t-4 border-yellow-500 rounded-t-2xl h-[190px] flex flex-col items-center justify-center shadow-xl relative overflow-hidden">
+                        <div className="absolute top-0 inset-x-0 h-1 bg-white/40 animate-pulse" />
+                        <span className="text-5xl">🥇</span>
+                        <span className="text-xs font-black text-yellow-800 uppercase mt-1 tracking-wider">1º Lugar</span>
+                        {podio.primeiros.length > 0 && <span className="text-xl font-black text-yellow-950 mt-1">{podio.primeiros[0].score} pts</span>}
+                      </div>
+                    </div>
+
+                    {/* 3º LUGAR (BRONZE) - DIREITA */}
+                    <div className="flex-1 flex flex-col items-center">
+                      <div className="text-center mb-2 px-2 max-w-[140px] truncate">
+                        {podio.terceiros.map((e, idx) => (
+                          <p key={idx} className="font-black text-sm uppercase text-gray-700 truncate">{e.nome}</p>
+                        ))}
+                        {podio.terceiros.length === 0 && <p className="text-gray-300 text-xs font-bold italic">--</p>}
+                      </div>
+                      <div className="w-full bg-amber-600 border-t-4 border-amber-700 rounded-t-2xl h-[90px] flex flex-col items-center justify-center shadow-md">
+                        <span className="text-3xl">🥉</span>
+                        <span className="text-[10px] font-black text-amber-100 uppercase mt-1">3º Lugar</span>
+                        {podio.terceiros.length > 0 && <span className="text-base font-black text-amber-950 mt-0.5">{podio.terceiros[0].score} pts</span>}
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Demais posições ou pontuações zeradas listadas abaixo */}
+                  {podio.restante.length > 0 && (
+                    <div className="w-full max-w-[500px] border-t border-gray-100 pt-4 space-y-2">
+                      {podio.restante.map((e, idx) => (
+                        <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-200">
+                          <span className="font-black text-xs text-gray-400 uppercase tracking-wider">Mesa de Jogo</span>
+                          <span className="font-black text-sm text-gray-700 uppercase truncate max-w-[200px]">{e.nome}</span>
+                          <span className="font-black text-sm text-gray-500">{e.score} pts</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                 </div>
               ) : (
                 <div className="my-6">
-                  <span className="text-5xl font-black text-purple-600">✓ {acertosTotal}</span>
-                  <p className="text-gray-400 font-black text-xs uppercase mt-2">Cursos identificados por {nomeCompetidor}</p>
+                  <span className="text-6xl font-black text-purple-600">✓ {acertosTotal}</span>
+                  <p className="text-gray-400 font-black text-xs uppercase mt-3 tracking-widest">Cursos acertados por {nomeCompetidor}</p>
                 </div>
               )}
 
-              <button type="button" onClick={() => router.push('/')} className="w-full bg-purple-700 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-purple-800 transition uppercase tracking-widest mt-8">
+              <button type="button" onClick={() => router.push('/')} className="w-full bg-purple-700 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-purple-800 transition uppercase tracking-widest mt-8 text-sm">
                 Voltar ao Menu principal
               </button>
             </div>
           ) : !statusFeedback ? (
             <div className="bg-white rounded-[40px] shadow-2xl p-8 md:p-12 flex flex-col items-center relative border-b-[10px] border-gray-200">
-               {modoEquipes && (
-                  <div className="bg-cyan-400 text-black px-8 py-1.5 rounded-full font-black text-sm uppercase mb-6 shadow-md tracking-wider">
-                    Vez de: {nomesEquipes[turnoEquipe]}
-                  </div>
-                )}
+               
+               {/* INDICADORES MÚLTIPLOS DE RODADA E VEZ */}
+               <div className="flex gap-2 mb-4">
+                  {modoEquipes && (
+                    <div className="bg-purple-700 text-white px-6 py-1.5 rounded-full font-black text-xs uppercase shadow-sm tracking-wider">
+                      Rodada {rodadaAtual} de {TOTAL_RODADAS} | Faltam {TOTAL_RODADAS - rodadaAtual}
+                    </div>
+                  )}
+                  {modoEquipes && (
+                    <div className="bg-cyan-400 text-black px-6 py-1.5 rounded-full font-black text-xs uppercase shadow-sm tracking-wider">
+                      Vez de: {nomesEquipes[turnoEquipe]}
+                    </div>
+                  )}
+                  {!modoEquipes && (
+                    <div className="bg-purple-700 text-white px-6 py-1.5 rounded-full font-black text-xs uppercase tracking-wider">
+                      Pergunta {indiceAtual + 1} de 10
+                    </div>
+                  )}
+               </div>
               
               <p className="text-gray-400 font-black text-xs mb-4 uppercase tracking-widest italic">
                 Qual é o curso técnico correspondente?
               </p>
 
-              <div className="min-h-[140px] flex items-center justify-center text-center px-4 mb-8">
-                <h2 className="text-2xl md:text-3xl font-black text-gray-800 leading-snug tracking-tight">
+              <div className="min-h-[140px] flex items-center justify-center text-center px-4 mb-6">
+                <h2 className="text-xl md:text-2xl font-black text-gray-800 leading-snug tracking-tight">
                   "{desafios[indiceAtual]?.pergunta}"
                 </h2>
               </div>
 
               {mostrarPalavra && (
-                <div className="mb-6 bg-purple-50 border border-purple-200 text-purple-900 font-black text-sm uppercase px-4 py-2 rounded-xl">
+                <div className="mb-4 bg-purple-50 border border-purple-200 text-purple-900 font-black text-sm uppercase px-4 py-2 rounded-xl">
                   Gabarito: {desafios[indiceAtual]?.resposta}
                 </div>
               )}
 
-              <div className="w-full flex flex-col gap-4">
-                <input 
-                  ref={inputRef}
-                  type="text" 
-                  value={digitado}
-                  onChange={(e) => setDigitado(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && validarResposta()}
-                  placeholder="DIGITE AQUI: TÉCNICO EM..." 
-                  className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-5 text-xl md:text-2xl text-center font-black uppercase outline-none focus:border-purple-500 focus:bg-white text-gray-950 placeholder:text-gray-400 shadow-inner"
-                  autoFocus
-                />
+              {/* OPCÕES PARA MULTIPLA ESCOLHA */}
+              <div className="w-full flex flex-col gap-3 mb-6">
+                {desafios[indiceAtual]?.opcoes?.map((opcao, idx) => (
+                  <button 
+                    key={idx}
+                    type="button"
+                    onClick={() => validarResposta(opcao)}
+                    className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 text-sm md:text-base font-black uppercase text-gray-800 hover:bg-purple-50 hover:border-purple-500 transition-all shadow-sm text-center"
+                  >
+                    {opcao}
+                  </button>
+                ))}
+              </div>
                 
-                <div className="flex gap-2">
-                  <button type="button" onClick={() => setMostrarPalavra(!mostrarPalavra)} className="flex-1 bg-gray-100 border border-gray-300 py-4 rounded-xl font-black text-gray-700 hover:bg-gray-200 transition uppercase text-xs">👁️ Ver Gabarito</button>
-                  <button type="button" onClick={validarResposta} className="flex-[2] bg-purple-700 text-white py-4 rounded-xl font-black hover:bg-purple-800 transition uppercase text-xs shadow-md tracking-wider">✓ Validar Resposta</button>
-                  <button type="button" onClick={pularDesafio} className="flex-1 bg-amber-100 border border-amber-300 py-4 rounded-xl font-black text-amber-700 hover:bg-amber-200 transition uppercase text-xs">➡️ Pular</button>
-                </div>
+              <div className="flex gap-2 w-full">
+                <button type="button" onClick={() => setMostrarPalavra(!mostrarPalavra)} className="flex-1 bg-gray-100 border border-gray-300 py-3 rounded-xl font-black text-gray-700 hover:bg-gray-200 transition uppercase text-xs">👁️ Ver Gabarito</button>
+                <button type="button" onClick={pularDesafio} className="flex-1 bg-amber-100 border border-amber-300 py-3 rounded-xl font-black text-amber-700 hover:bg-amber-200 transition uppercase text-xs">➡️ Pular</button>
               </div>
             </div>
           ) : (
             <div className={`rounded-[50px] shadow-2xl p-16 flex flex-col items-center justify-center border-8 border-white/20 w-full ${statusFeedback === 'acerto' ? 'bg-[#22c55e]' : 'bg-[#ef4444]'}`}>
               <h2 className="text-6xl md:text-8xl font-black text-white mb-6 text-center uppercase tracking-tighter">
-                {statusFeedback === 'acerto' ? 'Ponto! 🎉' : 'Incorreto! ✕'}
+                {statusFeedback === 'acerto' ? 'Ponto! 🎉' : 'Tempo Esgotado / Erro! ✕'}
               </h2>
               <p className="text-white font-bold text-lg mb-8 uppercase tracking-wide text-center">
-                Resposta: {desafios[indiceAtual]?.resposta}
+                A resposta certa é: {desafios[indiceAtual]?.resposta}
               </p>
               <button 
                 type="button"

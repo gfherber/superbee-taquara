@@ -2,13 +2,7 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-
-const BANCO_DE_PALAVRAS = {
-  "Kids-Escolar": ["apple", "blue", "dog", "sun", "jump"],
-  "Kids-Final": ["butterfly", "garden", "school", "friend", "yellow"],
-  "Teens-Escolar": ["action", "actor", "adventure", "airplane", "amazing"],
-  "Teens-Final": ["challenge", "experience", "knowledge", "structure", "university"]
-};
+import { BANCO_SUPERBEE } from "../../data/bancoDePalavras";
 
 function JogoContent() {
   const searchParams = useSearchParams();
@@ -20,6 +14,7 @@ function JogoContent() {
   const modalidade = searchParams.get('modalidade') || "Kids";
   const etapa = searchParams.get('etapa') || "Escolar";
   const nomeCompetidor = searchParams.get('nome') || "Anônimo";
+  const limitParam = searchParams.get('limit') || "all"; // Novo parâmetro: 'all' ou número
 
   const [tempo, setTempo] = useState(60);
   const [palavras, setPalavras] = useState([]);
@@ -33,10 +28,19 @@ function JogoContent() {
   useEffect(() => {
     const chave = `${modalidade}-${etapa}`;
     const dadosLS = JSON.parse(localStorage.getItem("custom_words_superbee") || "{}");
-    const listaDefinitiva = dadosLS[chave] || BANCO_DE_PALAVRAS[chave] || [];
+    const listaBase = dadosLS[chave] || BANCO_SUPERBEE[chave] || [];
     
-    setPalavras(listaDefinitiva.map(p => ({ texto: p, status: "pendente" })));
-  }, [modalidade, etapa]);
+    // 1. Embaralha sempre
+    let listaEmbaralhada = [...listaBase].sort(() => Math.random() - 0.5);
+    
+    // 2. Aplica o limite se definido
+    if (limitParam !== "all") {
+      const limite = parseInt(limitParam);
+      listaEmbaralhada = listaEmbaralhada.slice(0, limite);
+    }
+    
+    setPalavras(listaEmbaralhada.map(p => ({ texto: p, status: "pendente" })));
+  }, [modalidade, etapa, limitParam]);
 
   const acertos = palavras.filter(p => p.status === "acerto").length;
   const erros = palavras.filter(p => p.status === "erro").length;
@@ -148,7 +152,6 @@ function JogoContent() {
 
   return (
     <div className={`min-h-screen relative flex flex-col items-center py-10 font-sans transition-colors duration-500 overflow-hidden ${statusFeedback === 'erro' ? 'bg-[#ef4444]' : statusFeedback === 'acerto' ? 'bg-[#22c55e]' : 'bg-[#f59e0b]'}`}>
-      
       <div className="absolute inset-0 z-0 text-white/10 font-bold select-none pointer-events-none uppercase">
         <span className="absolute top-10 left-10 text-7xl rotate-[-10deg]">Smart</span>
         <span className="absolute top-40 right-10 text-8xl rotate-[15deg]">Success</span>
@@ -170,7 +173,6 @@ function JogoContent() {
             <span className="text-6xl mb-4">🏆</span>
             <h2 className="text-3xl font-black text-gray-800 mb-1 uppercase tracking-tight">Fim de Partida!</h2>
             <p className="text-gray-400 font-bold text-sm uppercase tracking-wider mb-8">{nomeCompetidor}</p>
-            
             <div className="flex gap-12 justify-center mb-10 w-full">
               <div className="flex flex-col items-center">
                 <span className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Acertos</span>
@@ -181,7 +183,6 @@ function JogoContent() {
                 <span className="text-5xl font-black text-red-500">✕ {erros}</span>
               </div>
             </div>
-
             <button onClick={() => router.push('/')} className="w-full bg-[#f59e0b] hover:bg-yellow-500 text-black font-black py-4 rounded-2xl shadow-xl shadow-yellow-600/10 transition duration-200 uppercase tracking-wider text-sm cursor-pointer">Voltar ao Menu (Enter)</button>
           </div>
         ) : !statusFeedback ? (

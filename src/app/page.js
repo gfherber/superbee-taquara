@@ -11,6 +11,7 @@ export default function Home() {
   const [etapa, setEtapa] = useState("Escolar");
   const [eixo, setEixo] = useState("Geral");
   const [modo, setModo] = useState("superbee"); 
+  const [limite, setLimite] = useState("all");
   const [verPlacar, setVerPlacar] = useState(false);
   const [ranking, setRanking] = useState([]);
   const [erroNome, setErroNome] = useState(false);
@@ -40,6 +41,9 @@ export default function Home() {
       params.append("equipes", nomesEquipes.slice(0, qtdEquipes).join(","));
     }
 
+    // Se o limite estiver vazio ou inválido, envia "all" por segurança
+    params.append("limit", limite || "all");
+
     if (modo === "profissoes") {
       params.append("eixo", eixo);
       router.push(`/profissoes?${params.toString()}`);
@@ -63,14 +67,12 @@ export default function Home() {
   return (
     <div className="flex flex-col md:flex-row min-h-screen w-full overflow-hidden font-sans bg-gray-50 relative text-gray-900">
       
-      {/* SELETOR DE MODO NO TOPO */}
       <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 bg-white/90 backdrop-blur border border-gray-200 p-1.5 rounded-full shadow-2xl flex items-center gap-1 w-[95%] max-w-[550px]">
-        <button type="button" onClick={() => { setModo("superbee"); setModoEquipes(false); }} className={`flex-1 text-center py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${modo === "superbee" ? "bg-[#f59e0b] text-black shadow-md" : "text-gray-400"}`}>Super Bee</button>
-        <button type="button" onClick={() => { setModo("jovens"); }} className={`flex-1 text-center py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${modo === "jovens" ? "bg-[#00458c] text-white shadow-md" : "text-gray-400"}`}>Jovens Aprendizes</button>
-        <button type="button" onClick={() => { setModo("profissoes"); }} className={`flex-1 text-center py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${modo === "profissoes" ? "bg-purple-700 text-white shadow-md" : "text-gray-400"}`}>Profissões EAD</button>
+        <button type="button" onClick={() => { setModo("superbee"); setModoEquipes(false); }} className={`flex-1 text-center py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all duration-150 active:scale-95 cursor-pointer ${modo === "superbee" ? "bg-[#f59e0b] text-black shadow-md ring-2 ring-offset-1 ring-orange-400" : "bg-gray-200 text-gray-500 hover:bg-gray-300"}`}>Super Bee</button>
+        <button type="button" onClick={() => { setModo("jovens"); }} className={`flex-1 text-center py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all duration-150 active:scale-95 cursor-pointer ${modo === "jovens" ? "bg-[#00458c] text-white shadow-md ring-2 ring-offset-1 ring-blue-800" : "bg-gray-200 text-gray-500 hover:bg-gray-300"}`}>Jovens Aprendizes</button>
+        <button type="button" onClick={() => { setModo("profissoes"); }} className={`flex-1 text-center py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all duration-150 active:scale-95 cursor-pointer ${modo === "profissoes" ? "bg-purple-700 text-white shadow-md ring-2 ring-offset-1 ring-purple-600" : "bg-gray-200 text-gray-500 hover:bg-gray-300"}`}>Profissões EAD</button>
       </div>
 
-      {/* LADO ESQUERDO */}
       <div className={`w-full md:w-1/2 text-white flex flex-col justify-center items-start px-12 md:px-20 py-20 relative overflow-hidden transition-colors duration-500 ${modo === "superbee" ? "bg-[#f59e0b]" : modo === "jovens" ? "bg-[#00458c]" : "bg-purple-900"}`}>
         <div className="absolute inset-0 z-0 font-black select-none pointer-events-none uppercase opacity-10 text-8xl">
           <span className="absolute top-10 left-10 rotate-[-10deg]">Smart</span>
@@ -84,16 +86,14 @@ export default function Home() {
         </h1>
       </div>
 
-      {/* LADO DIREITO */}
       <div className="w-full md:w-1/2 flex flex-col justify-center items-center py-20 relative">
-        <div className="bg-white p-8 md:p-10 rounded-[32px] shadow-2xl w-[95%] max-w-[450px] transition-all duration-300">
+        <div className="bg-white p-8 md:p-10 rounded-[32px] shadow-2xl w-[95%] max-w-[450px]">
           
           {!verPlacar ? (
             <>
               <h2 className="text-3xl font-black text-center mb-1">{modo === "superbee" ? "Spelling Bee" : modo === "jovens" ? "Learning Track" : "EAD Quiz"}</h2>
               <p className="text-center text-gray-400 mb-6 font-semibold text-sm italic">Configuração da dinâmica:</p>
               
-              {/* TOGGLE MODO EQUIPES */}
               {modo !== "superbee" && (
                 <div className={`mb-6 flex items-center justify-between p-4 rounded-2xl border ${modo === "jovens" ? "bg-blue-50 border-blue-100" : "bg-purple-50 border-purple-100"}`}>
                   <div className="flex flex-col">
@@ -110,7 +110,7 @@ export default function Home() {
                     <label className="block text-[10px] font-black uppercase mb-2">Quantidade de Grupos</label>
                     <div className="flex gap-2">
                       {[2, 3, 4].map(n => (
-                        <button type="button" key={n} onClick={() => setQtdEquipes(n)} className={`flex-1 py-2 rounded-lg font-black transition-all ${qtdEquipes === n ? (modo === 'jovens' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white') : 'bg-gray-100 text-gray-400'}`}>{n}</button>
+                        <button type="button" key={n} onClick={() => setQtdEquipes(n)} className={`flex-1 py-2 rounded-lg font-black transition-all duration-150 active:scale-95 ${qtdEquipes === n ? (modo === 'jovens' ? 'bg-blue-600 text-white ring-2 ring-offset-1 ring-blue-800' : 'bg-purple-600 text-white ring-2 ring-offset-1 ring-purple-800') : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}>{n}</button>
                       ))}
                     </div>
                   </div>
@@ -131,7 +131,6 @@ export default function Home() {
                 </div>
               )}
 
-              {/* ALTERNANCIA DE FILTROS COM BASE NO MODO */}
               {modo === "profissoes" ? (
                 <div className="mb-6">
                   <label className="block text-[10px] font-black text-purple-800 uppercase mb-1">Eixo Tecnológico EAD</label>
@@ -143,19 +142,34 @@ export default function Home() {
                   </select>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Modalidade</label>
-                    <select value={modalidade} onChange={(e) => setModalidade(e.target.value)} className="w-full border border-gray-200 rounded-xl p-2 text-xs font-bold bg-gray-50 outline-none text-gray-900"><option value="Kids">Kids</option><option value="Teens">Teens & Adults</option></select>
+                <>
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Modalidade</label>
+                      <select value={modalidade} onChange={(e) => setModalidade(e.target.value)} className="w-full border border-gray-200 rounded-xl p-2 text-xs font-bold bg-gray-50 outline-none text-gray-900"><option value="Kids">Kids</option><option value="Teens">Teens & Adults</option></select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Etapa</label>
+                      <select value={etapa} onChange={(e) => setEtapa(e.target.value)} className="w-full border border-gray-200 rounded-xl p-2 text-xs font-bold bg-gray-50 outline-none text-gray-900"><option value="Escolar">Escolar</option><option value="Final">Final</option></select>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Etapa</label>
-                    <select value={etapa} onChange={(e) => setEtapa(e.target.value)} className="w-full border border-gray-200 rounded-xl p-2 text-xs font-bold bg-gray-50 outline-none text-gray-900"><option value="Escolar">Escolar</option><option value="Final">Final</option></select>
+                  
+                  {/* SELETOR DE LIMITE DINÂMICO */}
+                  <div className="mb-6">
+                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Quantidade de Perguntas</label>
+                    {limite === "all" ? (
+                        <button type="button" onClick={() => setLimite("")} className="w-full bg-gray-200 text-gray-600 rounded-xl p-3 text-xs font-black uppercase transition-all hover:bg-gray-300 active:scale-95">Definir Quantidade Específica</button>
+                    ) : (
+                        <div className="flex gap-2 animate-in fade-in duration-300">
+                            <input type="number" placeholder="Nº" value={limite} onChange={(e) => setLimite(e.target.value)} className="w-1/3 border border-gray-200 rounded-xl p-2 text-xs font-bold bg-gray-50 outline-none" />
+                            <button type="button" onClick={() => setLimite("all")} className={`flex-1 rounded-xl text-xs font-black uppercase transition-all duration-150 active:scale-95 ${modo === 'superbee' ? 'bg-[#f59e0b] text-black ring-2 ring-offset-1 ring-orange-500' : 'bg-gray-800 text-white'}`}>Fazer Todas</button>
+                        </div>
+                    )}
                   </div>
-                </div>
+                </>
               )}
 
-              <button type="button" onClick={iniciarJogo} className={`w-full font-black py-4 rounded-xl shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${modo === "superbee" ? "bg-[#f59e0b] text-black" : modo === "jovens" ? "bg-[#00458c] text-white" : "bg-purple-700 text-white"}`}>COMEÇAR DINÂMICA →</button>
+              <button type="button" onClick={iniciarJogo} className={`w-full font-black py-4 rounded-xl shadow-xl transition-all duration-150 active:scale-95 hover:brightness-110 cursor-pointer ${modo === "superbee" ? "bg-[#f59e0b] text-black" : modo === "jovens" ? "bg-[#00458c] text-white" : "bg-purple-700 text-white"}`}>COMEÇAR DINÂMICA →</button>
               
               <div className="flex justify-between mt-4">
                 <button type="button" onClick={abrirPlacar} className="text-[10px] font-bold text-gray-400 hover:text-gray-600 uppercase tracking-widest cursor-pointer">🏆 Ver Placar</button>
@@ -166,17 +180,13 @@ export default function Home() {
             <>
               <h2 className="text-2xl font-black text-center mb-6 uppercase">🏆 Hall da Fama</h2>
               <div className="space-y-2 mb-6">
-                {ranking.length === 0 ? (
-                  <p className="text-center text-xs font-bold text-gray-400 py-6">Placar vazio!</p>
-                ) : (
-                  ranking.slice(0, 5).map((jogador, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
-                      <span className="font-black text-gray-400 text-sm">{i + 1}º</span>
-                      <span className="font-black text-sm uppercase flex-1 ml-4 truncate text-gray-800">{jogador.nome}</span>
-                      <span className="font-black text-green-600 ml-2">✓ {jogador.acertos}</span>
-                    </div>
-                  ))
-                )}
+                {ranking.length === 0 ? <p className="text-center text-xs font-bold text-gray-400 py-6">Placar vazio!</p> : ranking.slice(0, 5).map((jogador, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <span className="font-black text-gray-400 text-sm">{i + 1}º</span>
+                    <span className="font-black text-sm uppercase flex-1 ml-4 truncate text-gray-800">{jogador.nome}</span>
+                    <span className="font-black text-green-600 ml-2">✓ {jogador.acertos}</span>
+                  </div>
+                ))}
               </div>
               <button type="button" onClick={() => setVerPlacar(false)} className="w-full bg-gray-800 text-white font-black py-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer">← Voltar</button>
             </>
